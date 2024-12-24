@@ -1,38 +1,28 @@
 import tkinter as tk
-from tkinter import simpledialog, messagebox, Toplevel, Label, Entry, Button
+from tkinter import simpledialog, messagebox, Toplevel, Label, Entry, Button, ttk
 from datetime import datetime
-
 
 class FinanceApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Finance Tracker")
-        self.root.geometry("800x500")
+        self.root.geometry("800x600")
         self.root.configure(bg="#f8f9fa")
 
-        # بيانات التطبيق
         self.categories = {}
         self.transactions = []
-
-        # حالة الإخفاء/الإظهار
         self.categories_visible = False
         self.transactions_visible = False
-
-        # إنشاء تقسيم الشاشة
         self.create_layout()
 
     def create_layout(self):
-        # تقسيم الشاشة إلى نصفين
         self.left_frame = tk.Frame(self.root, bg="#e3f2fd", width=400)
         self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         self.right_frame = tk.Frame(self.root, bg="#ffffff", width=400)
         self.right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        # إضافة أقسام الكاتيجوري
         self.add_category_section()
-
-        # إضافة أقسام الريسينت ترانزاكشن
         self.add_recent_transactions_section()
 
     def add_category_section(self):
@@ -51,11 +41,32 @@ class FinanceApp:
         self.category_listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         self.category_listbox.pack_forget()
 
+        self.add_category_buttons = tk.Frame(self.left_frame, bg="#e3f2fd")
+        self.add_category_buttons.pack(fill=tk.X, pady=5)
+
         self.btn_add_category = tk.Button(
-            self.left_frame, text="Add Category", bg="#4CAF50", fg="white", font=("Arial", 12, "bold"),
-            command=self.add_category, height=2
+            self.add_category_buttons, text="Add Category", bg="#4CAF50", fg="white", font=("Arial", 10),
+            command=self.add_category, height=1, width=12
         )
-        self.btn_add_category.pack(fill=tk.X, padx=10, pady=5)
+        self.btn_add_category.pack(side=tk.LEFT, padx=5)
+
+        self.btn_delete_category = tk.Button(
+            self.add_category_buttons, text="Delete Selected", bg="#d32f2f", fg="white", font=("Arial", 10),
+            command=self.delete_selected_category, height=1, width=12
+        )
+        self.btn_delete_category.pack(side=tk.LEFT, padx=5)
+
+        self.btn_edit_category = tk.Button(
+            self.add_category_buttons, text="Edit Category", bg="#ff9800", fg="white", font=("Arial", 10),
+            command=self.edit_category, height=1, width=12
+        )
+        self.btn_edit_category.pack(side=tk.LEFT, padx=5)
+
+        self.btn_delete_all = tk.Button(
+            self.add_category_buttons, text="Delete All", bg="#f44336", fg="white", font=("Arial", 10),
+            command=self.delete_all_categories, height=1, width=12
+        )
+        self.btn_delete_all.pack(side=tk.LEFT, padx=5)
 
     def add_recent_transactions_section(self):
         title_frame = tk.Frame(self.right_frame, bg="#ffffff")
@@ -73,11 +84,32 @@ class FinanceApp:
         self.transaction_listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
         self.transaction_listbox.pack_forget()
 
+        self.add_transaction_buttons = tk.Frame(self.right_frame, bg="#ffffff")
+        self.add_transaction_buttons.pack(fill=tk.X, pady=5)
+
         self.btn_add_transaction = tk.Button(
-            self.right_frame, text="Add Transaction", bg="#03A9F4", fg="white", font=("Arial", 12, "bold"),
-            command=self.add_transaction, height=2
+            self.add_transaction_buttons, text="Add Transaction", bg="#03A9F4", fg="white", font=("Arial", 10),
+            command=self.add_transaction, height=1, width=12
         )
-        self.btn_add_transaction.pack(fill=tk.X, padx=10, pady=5)
+        self.btn_add_transaction.pack(side=tk.LEFT, padx=5)
+
+        self.btn_delete_transaction = tk.Button(
+            self.add_transaction_buttons, text="Delete Selected", bg="#d32f2f", fg="white", font=("Arial", 10),
+            command=self.delete_selected_transaction, height=1, width=12
+        )
+        self.btn_delete_transaction.pack(side=tk.LEFT, padx=5)
+
+        self.btn_edit_transaction = tk.Button(
+            self.add_transaction_buttons, text="Edit Transaction", bg="#ff9800", fg="white", font=("Arial", 10),
+            command=self.edit_transaction, height=1, width=12
+        )
+        self.btn_edit_transaction.pack(side=tk.LEFT, padx=5)
+
+        self.btn_delete_all_transactions = tk.Button(
+            self.add_transaction_buttons, text="Delete All", bg="#f44336", fg="white", font=("Arial", 10),
+            command=self.delete_all_transactions, height=1, width=12
+        )
+        self.btn_delete_all_transactions.pack(side=tk.LEFT, padx=5)
 
     def toggle_categories(self):
         if self.categories_visible:
@@ -96,19 +128,6 @@ class FinanceApp:
             self.transaction_listbox.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
             self.toggle_transactions_btn.config(text="▼")
         self.transactions_visible = not self.transactions_visible
-
-    def refresh_categories(self):
-        self.category_listbox.delete(0, tk.END)
-        for category, details in self.categories.items():
-            remaining = details["max"] - details["spent"]
-            self.category_listbox.insert(tk.END, f"{category} (Remaining: ${remaining:.2f})")
-
-    def refresh_recent_transactions(self):
-        self.transaction_listbox.delete(0, tk.END)
-        for t in reversed(self.transactions[-10:]):
-            self.transaction_listbox.insert(tk.END,
-                                            f"{t['name']} - ${t['amount']:.2f} | Category: {t['category']} "
-                                            f"| Remaining: ${t['remaining']:.2f} | {t['time']}")
 
     def add_category(self):
         self.popup_two_inputs("Add Category", "Category Name:", "Max Budget:", self.save_category)
@@ -158,22 +177,178 @@ class FinanceApp:
         except ValueError:
             messagebox.showerror("Error", "Invalid inputs for transaction!")
 
-    def popup_two_inputs(self, title, label1, label2, save_function):
+    def delete_selected_transaction(self):
+        selected_index = self.transaction_listbox.curselection()
+        if not selected_index:
+            messagebox.showerror("Error", "Please select a transaction to delete!")
+            return
+        transaction = self.transactions[selected_index[0]]
+        confirm = messagebox.askyesno("Delete Transaction", f"Are you sure you want to delete the transaction '{transaction['name']}'?")
+        if confirm:
+            self.transactions.remove(transaction)
+            category_name = transaction["category"]
+            self.categories[category_name]["spent"] -= transaction["amount"]
+            self.refresh_categories()
+            self.refresh_recent_transactions()
+
+    def delete_all_transactions(self):
+        confirm = messagebox.askyesno("Delete All Transactions", "Are you sure you want to delete all transactions?")
+        if confirm:
+            self.transactions.clear()
+            for category in self.categories.values():
+                category["spent"] = 0
+            self.refresh_categories()
+            self.refresh_recent_transactions()
+
+    def delete_selected_category(self):
+        selected_index = self.category_listbox.curselection()
+        if not selected_index:
+            messagebox.showerror("Error", "Please select a category to delete!")
+            return
+        category_name = list(self.categories.keys())[selected_index[0]]
+        confirm = messagebox.askyesno("Delete Category", f"Are you sure you want to delete the category '{category_name}'?")
+        if confirm:
+            del self.categories[category_name]
+            self.refresh_categories()
+
+    def delete_all_categories(self):
+        confirm = messagebox.askyesno("Delete All Categories", "Are you sure you want to delete all categories?")
+        if confirm:
+            self.categories.clear()
+            self.refresh_categories()
+
+    def refresh_categories(self):
+        self.category_listbox.delete(0, tk.END)
+        for category, data in self.categories.items():
+            self.category_listbox.insert(tk.END, f"{category}: Max Budget: {data['max']}, Spent: {data['spent']}")
+
+    def refresh_recent_transactions(self):
+        self.transaction_listbox.delete(0, tk.END)
+        for trans in self.transactions:
+            self.transaction_listbox.insert(tk.END, f"{trans['name']} - {trans['amount']} - {trans['time']}")
+
+    def popup_two_inputs(self, title, label1, label2, save_command):
         popup = Toplevel(self.root)
         popup.title(title)
-        popup.geometry("300x150")
-        popup.resizable(False, False)
+        popup.geometry("350x250")  # تعديل حجم النافذة ليشمل زر الحفظ بشكل أفضل
 
-        Label(popup, text=label1).pack(pady=5)
-        entry1 = Entry(popup, width=30)
-        entry1.pack(pady=5)
+        label1 = tk.Label(popup, text=label1)
+        label1.pack(padx=5, pady=5)
 
-        Label(popup, text=label2).pack(pady=5)
-        entry2 = Entry(popup, width=30)
-        entry2.pack(pady=5)
+        entry1 = tk.Entry(popup)
+        entry1.pack(padx=5, pady=5)
 
-        Button(popup, text="Submit", command=lambda: [save_function(entry1.get(), entry2.get()), popup.destroy()])\
-            .pack(pady=10)
+        label2 = tk.Label(popup, text=label2)
+        label2.pack(padx=5, pady=5)
+
+        entry2 = tk.Entry(popup)
+        entry2.pack(padx=5, pady=5)
+
+        def on_save():
+            save_command(entry1.get(), entry2.get())
+            popup.destroy()
+
+        save_btn = tk.Button(popup, text="Save", command=on_save)
+        save_btn.pack(pady=10)
+
+    def edit_category(self):
+        selected_index = self.category_listbox.curselection()
+        if not selected_index:
+            messagebox.showerror("Error", "Please select a category to edit!")
+            return
+        
+        category_name = list(self.categories.keys())[selected_index[0]]
+        current_data = self.categories[category_name]
+        self.popup_two_inputs(
+            "Edit Category", 
+            "Category Name:", 
+            "Max Budget:", 
+            lambda name, max_budget: self.update_category(category_name, name, max_budget)
+        )
+
+    def update_category(self, old_name, new_name, new_max_budget):
+        try:
+            new_max_budget = float(new_max_budget)
+            if not new_name or new_max_budget <= 0:
+                raise ValueError("Invalid inputs")
+            
+            # Remove the old category and add the updated one
+            del self.categories[old_name]
+            self.categories[new_name] = {"max": new_max_budget, "spent": 0}
+            
+            self.refresh_categories()
+            messagebox.showinfo("Success", f"Category '{old_name}' updated to '{new_name}' with max budget ${new_max_budget:.2f}!")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid inputs for category!")
+
+    def edit_transaction(self):
+        selected_index = self.transaction_listbox.curselection()
+        if not selected_index:
+            messagebox.showerror("Error", "Please select a transaction to edit!")
+            return
+        
+        transaction = self.transactions[selected_index[0]]
+        
+        # عرض نافذة مع تعديل الفئة والاسم والمبلغ
+        popup = Toplevel(self.root)
+        popup.title("Edit Transaction")
+        popup.geometry("350x250")
+
+        label1 = tk.Label(popup, text="Transaction Name:")
+        label1.pack(padx=5, pady=5)
+
+        entry1 = tk.Entry(popup)
+        entry1.insert(0, transaction["name"])  # ضع الاسم الحالي
+        entry1.pack(padx=5, pady=5)
+
+        label2 = tk.Label(popup, text="Transaction Amount:")
+        label2.pack(padx=5, pady=5)
+
+        entry2 = tk.Entry(popup)
+        entry2.insert(0, str(transaction["amount"]))  # ضع المبلغ الحالي
+        entry2.pack(padx=5, pady=5)
+
+        label3 = tk.Label(popup, text="Select Category:")
+        label3.pack(padx=5, pady=5)
+
+        category_options = list(self.categories.keys())
+        category_combobox = ttk.Combobox(popup, values=category_options)
+        category_combobox.set(transaction["category"])  # تعيين الفئة الحالية
+        category_combobox.pack(padx=5, pady=5)
+
+        def on_save():
+            name = entry1.get()
+            amount = entry2.get()
+            category = category_combobox.get()
+            self.update_transaction(transaction, name, amount, category)
+            popup.destroy()
+
+        save_btn = tk.Button(popup, text="Save", command=on_save)
+        save_btn.pack(pady=10)
+
+    def update_transaction(self, transaction, new_name, new_amount, new_category):
+        try:
+            new_amount = float(new_amount)
+            if new_amount <= 0 or not new_name or not new_category:
+                raise ValueError("Invalid inputs")
+            
+            # Update the transaction
+            category = self.categories[transaction["category"]]
+            category["spent"] -= transaction["amount"]
+            category["spent"] += new_amount
+            transaction["name"] = new_name
+            transaction["amount"] = new_amount
+            transaction["category"] = new_category
+
+            # Update the remaining budget for the selected category
+            remaining = category["max"] - category["spent"]
+            transaction["remaining"] = remaining
+
+            self.refresh_categories()
+            self.refresh_recent_transactions()
+            messagebox.showinfo("Success", "Transaction updated successfully!")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid inputs for transaction!")
 
 
 if __name__ == "__main__":
